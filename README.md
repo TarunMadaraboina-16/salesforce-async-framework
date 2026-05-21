@@ -1,18 +1,45 @@
-# Salesforce DX Project: Next Steps
+# Salesforce Async Framework
+### Enterprise-Grade Queueable Chaining with Persistent Telemetry
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+![Apex](https://img.shields.io/badge/Salesforce-Apex-blue)
+![Coverage](https://img.shields.io/badge/Test%20Coverage-95%25-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## How Do You Plan to Deploy Your Changes?
+---
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
+## The Problem
 
-## Configure Your Salesforce DX Project
+Standard Queueable Apex has no memory.
 
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
+Pass it 1,000 records with a batch size of 200 
+and it processes the first 200 then disappears — 
+no error, no alert, no indication that 800 records 
+were silently abandoned.
 
-## Read All About It
+At low volume nobody notices.  
+At enterprise scale this corrupts your data pipeline.
 
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+---
+
+## What This Solves
+
+A self-chaining Queueable framework that handles 
+high-volume sObject processing safely across 
+transaction boundaries.
+
+**Core capabilities:**
+
+- Dynamically slices any sObject collection into 
+  configurable memory-safe chunks
+- Chains itself automatically until all records 
+  are processed
+- Tracks execution depth with a MAX_STACK_DEPTH 
+  guardrail — prevents infinite loops
+- Uses partial success DML (allOrNone = false) — 
+  one bad record does not kill the entire batch
+- Streams every failure and termination event to 
+  a persistent Apex_Log__c object for full RCA
+
+---
+
+## Architecture
